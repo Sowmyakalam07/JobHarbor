@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Job Listings",
+    "slug": "job-listings",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./temp-app/assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./temp-app/assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6200ee"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./temp-app/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./temp-app/assets/favicon.png",
+      "bundler": "metro"
+    }
+  }
+}

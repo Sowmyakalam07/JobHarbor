@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Listings App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    
+    body {
+      background-color: #f6f6f6;
+    }
+    
+    header {
+      background-color: #6200ee;
+      color: white;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .tab-container {
+      display: flex;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid #6200ee;
+      color: #6200ee;
+      font-weight: bold;
+    }
+    
+    .tab-content {
+      padding: 16px;
+    }
+    
+    .jobs-list, .bookmarks-list {
+      display: none;
+    }
+    
+    .active-tab {
+      display: block;
+    }
+    
+    .job-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .job-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    .job-company {
+      font-size: 16px;
+      color: #6200ee;
+      margin-bottom: 8px;
+    }
+    
+    .job-location {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .job-salary {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .bookmark-button {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #6200ee;
+      cursor: pointer;
+    }
+    
+    .job-details {
+      display: none;
+      padding: 16px;
+    }
+    
+    .back-button {
+      color: #6200ee;
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .details-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    .details-company {
+      font-size: 18px;
+      color: #6200ee;
+      margin-bottom: 8px;
+    }
+    
+    .details-location {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .details-salary {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+    
+    .details-description {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+    }
+    
+    .empty-state-text {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+    
+    .empty-state-button {
+      background-color: #6200ee;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 16px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 70vh;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #6200ee;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Job Listings</h1>
+  </header>
+  
+  <div class="tab-container">
+    <div class="tab active" id="jobs-tab">Jobs</div>
+    <div class="tab" id="bookmarks-tab">Bookmarks</div>
+  </div>
+  
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Loading Jobs...</p>
+  </div>
+  
+  <div class="tab-content">
+    <div class="jobs-list active-tab" id="jobs-list"></div>
+    
+    <div class="bookmarks-list" id="bookmarks-list">
+      <div class="empty-state" id="bookmarks-empty-state">
+        <p class="empty-state-text">No bookmarks yet</p>
+        <button class="empty-state-button" id="browse-jobs-button">Browse Jobs</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="job-details" id="job-details">
+    <button class="back-button" id="back-button">← Back to Jobs</button>
+    <h2 class="details-title" id="details-title"></h2>
+    <p class="details-company" id="details-company"></p>
+    <p class="details-location" id="details-location"></p>
+    <p class="details-salary" id="details-salary"></p>
+    <p class="details-description" id="details-description"></p>
+  </div>
+  
+  <script>
+    // Sample job data
+    const SAMPLE_JOBS = [
+      {
+        id: '1',
+        title: 'Senior React Native Developer',
+        company: 'TechCorp',
+        location: 'San Francisco, CA',
+        description: 'We are looking for an experienced React Native developer to join our mobile team. You will be responsible for building cross-platform mobile applications using React Native.',
+        salary: 120000,
+      },
+      {
+        id: '2',
+        title: 'Frontend Developer',
+        company: 'WebSolutions Inc.',
+        location: 'Remote',
+        description: 'WebSolutions is seeking a talented Frontend Developer to create responsive and intuitive user interfaces for our web applications.',
+        salary: 95000,
+      },
+      {
+        id: '3',
+        title: 'Mobile App Designer',
+        company: 'CreativeUX',
+        location: 'New York, NY',
+        description: 'Join our design team to create beautiful and functional mobile app interfaces that delight users.',
+        salary: 90000,
+      },
+      {
+        id: '4',
+        title: 'DevOps Engineer',
+        company: 'CloudSystems',
+        location: 'Chicago, IL',
+        description: 'CloudSystems is looking for a DevOps Engineer to help automate and optimize our infrastructure and deployment processes.',
+        salary: 115000,
+      },
+      {
+        id: '5',
+        title: 'Backend Developer',
+        company: 'DataTech',
+        location: 'Austin, TX',
+        description: 'Build robust and scalable backend services for our data processing platform.',
+        salary: 110000,
+      }
+    ];
+    
+    // DOM Elements
+    const jobsTab = document.getElementById('jobs-tab');
+    const bookmarksTab = document.getElementById('bookmarks-tab');
+    const jobsList = document.getElementById('jobs-list');
+    const bookmarksList = document.getElementById('bookmarks-list');
+    const jobDetails = document.getElementById('job-details');
+    const backButton = document.getElementById('back-button');
+    const detailsTitle = document.getElementById('details-title');
+    const detailsCompany = document.getElementById('details-company');
+    const detailsLocation = document.getElementById('details-location');
+    const detailsSalary = document.getElementById('details-salary');
+    const detailsDescription = document.getElementById('details-description');
+    const bookmarksEmptyState = document.getElementById('bookmarks-empty-state');
+    const browseJobsButton = document.getElementById('browse-jobs-button');
+    const loading = document.getElementById('loading');
+    
+    // State
+    let bookmarks = [];
+    
+    // Format salary
+    function formatSalary(salary) {
+      if (!salary) return 'Salary not specified';
+      return `$${salary.toLocaleString()}`;
+    }
+    
+    // Check if job is bookmarked
+    function isBookmarked(jobId) {
+      return bookmarks.some(job => job.id === jobId);
+    }
+    
+    // Create job card element
+    function createJobCard(job) {
+      const card = document.createElement('div');
+      card.className = 'job-card';
+      card.innerHTML = `
+        <h3 class="job-title">${job.title}</h3>
+        <p class="job-company">${job.company}</p>
+        <p class="job-location">${job.location}</p>
+        <p class="job-salary">${formatSalary(job.salary)}</p>
+        <button class="bookmark-button" data-job-id="${job.id}">
+          ${isBookmarked(job.id) ? '★' : '☆'}
+        </button>
+      `;
+      
+      // Add event listener to view job details
+      card.addEventListener('click', (event) => {
+        if (!event.target.classList.contains('bookmark-button')) {
+          showJobDetails(job);
+        }
+      });
+      
+      // Add event listener to bookmark button
+      const bookmarkButton = card.querySelector('.bookmark-button');
+      bookmarkButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleBookmark(job);
+        // Update the button text
+        bookmarkButton.textContent = isBookmarked(job.id) ? '★' : '☆';
+      });
+      
+      return card;
+    }
+    
+    // Show job details
+    function showJobDetails(job) {
+      // Hide the lists and show the details
+      jobsList.parentElement.style.display = 'none';
+      jobDetails.style.display = 'block';
+      
+      // Update the details
+      detailsTitle.textContent = job.title;
+      detailsCompany.textContent = job.company;
+      detailsLocation.textContent = job.location;
+      detailsSalary.textContent = formatSalary(job.salary);
+      detailsDescription.textContent = job.description;
+    }
+    
+    // Toggle bookmark status
+    function toggleBookmark(job) {
+      const isAlreadyBookmarked = isBookmarked(job.id);
+      
+      if (isAlreadyBookmarked) {
+        // Remove from bookmarks
+        bookmarks = bookmarks.filter(bookmark => bookmark.id !== job.id);
+      } else {
+        // Add to bookmarks
+        bookmarks.push(job);
+      }
+      
+      // Update the bookmarks list
+      renderBookmarks();
+    }
+    
+    // Render the jobs list
+    function renderJobs() {
+      jobsList.innerHTML = '';
+      
+      SAMPLE_JOBS.forEach(job => {
+        const card = createJobCard(job);
+        jobsList.appendChild(card);
+      });
+    }
+    
+    // Render the bookmarks list
+    function renderBookmarks() {
+      bookmarksList.innerHTML = '';
+      
+      if (bookmarks.length === 0) {
+        // Show empty state
+        bookmarksEmptyState.style.display = 'block';
+      } else {
+        // Hide empty state
+        bookmarksEmptyState.style.display = 'none';
+        
+        // Add bookmarked jobs
+        bookmarks.forEach(job => {
+          const card = createJobCard(job);
+          bookmarksList.appendChild(card);
+        });
+      }
+    }
+    
+    // Switch tabs
+    function switchTab(tab) {
+      // Remove active class from all tabs
+      jobsTab.classList.remove('active');
+      bookmarksTab.classList.remove('active');
+      
+      // Hide all tab content
+      jobsList.classList.remove('active-tab');
+      bookmarksList.classList.remove('active-tab');
+      
+      // Show the active tab
+      if (tab === 'jobs') {
+        jobsTab.classList.add('active');
+        jobsList.classList.add('active-tab');
+      } else {
+        bookmarksTab.classList.add('active');
+        bookmarksList.classList.add('active-tab');
+      }
+    }
+    
+    // Initialize the app
+    function init() {
+      // Add event listeners to tabs
+      jobsTab.addEventListener('click', () => {
+        switchTab('jobs');
+        jobsList.parentElement.style.display = 'block';
+        jobDetails.style.display = 'none';
+      });
+      
+      bookmarksTab.addEventListener('click', () => {
+        switchTab('bookmarks');
+        jobsList.parentElement.style.display = 'block';
+        jobDetails.style.display = 'none';
+      });
+      
+      // Add event listener to back button
+      backButton.addEventListener('click', () => {
+        jobsList.parentElement.style.display = 'block';
+        jobDetails.style.display = 'none';
+      });
+      
+      // Add event listener to browse jobs button
+      browseJobsButton.addEventListener('click', () => {
+        switchTab('jobs');
+      });
+      
+      // Simulate loading delay
+      setTimeout(() => {
+        loading.style.display = 'none';
+        
+        // Render jobs and bookmarks
+        renderJobs();
+        renderBookmarks();
+      }, 1000);
+    }
+    
+    // Call init when the page loads
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

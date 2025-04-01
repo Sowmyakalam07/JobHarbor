@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1242px" height="2436px" viewBox="0 0 1242 2436" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <rect width="1242" height="2436" fill="#6200ee"/>
+    <g transform="translate(321, 1018)">
+        <rect x="0" y="0" width="600" height="400" rx="32" fill="white"/>
+        <text x="300" y="165" font-family="Arial" font-size="72" font-weight="bold" text-anchor="middle" fill="#6200ee">Job</text>
+        <text x="300" y="245" font-family="Arial" font-size="72" font-weight="bold" text-anchor="middle" fill="#6200ee">Listings</text>
+    </g>
+</svg>
